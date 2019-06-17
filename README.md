@@ -18,5 +18,5 @@
 * 重写consul客户端，c++/golang版本
 
 # 设计草图
-![](assets/spot-consul-design-v1.JPG)
+![spot-consul-design](assets/spot-consul-design-v1.JPG)
 
