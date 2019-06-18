@@ -1,4 +1,4 @@
-package spot_consul
+package internal
 
 // Weight factor should learn from workload
 // 用一个模型来管理权重与学习方法便于升级维护

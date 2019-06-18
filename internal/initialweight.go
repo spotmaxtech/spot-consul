@@ -1,4 +1,4 @@
-package spot_consul
+package internal
 
 type InitialWeight struct {
 }
