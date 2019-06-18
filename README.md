@@ -20,3 +20,8 @@
 # 设计草图
 ![spot-consul-design](assets/spot-consul-design-v1.JPG)
 
+# 部署框图
+![detail_design](assets/detail_design1.png)
+
+# 模块图
+![detail_design](assets/detail_design2.png)
