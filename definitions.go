@@ -1,12 +1,12 @@
 package spot_consul
 
 // Manage global wide service
-type Global struct {
+type GlobalService struct {
 	Services []*Service
 }
 
 type InstanceLoad struct {
-	Factor     int32
+	Load       float64
 	InstanceId string
 	Ip         string
 }
@@ -14,17 +14,16 @@ type InstanceLoad struct {
 // Manage a service, every service manage many zones
 type Service struct {
 	Name   string
-	Region string
+	Nodes  map[string]*ServiceNode
 	Zones  []*ServiceZone
+	Region string
 }
 
 // Better to use a struct to manage node detail
 // Data filled when reading consul key
 type ServiceNode struct {
-	Factor     int64
 	InstanceId string
 	Host       string
-	Workload   int64
 	Zone       string
 }
 
@@ -32,12 +31,16 @@ type ServiceNode struct {
 // Zone must contain workload for computing learning metric
 type ServiceZone struct {
 	Zone     string
-	Workload int64
 	Nodes    []*ServiceNode
 }
 
 // All the factors we want
 type WeightFactors struct {
-	InstanceFactors map[string]int64
-	CrossRate       float32
+	InstanceFactors map[string]float64
+	CrossRate       map[string]float64
+}
+
+type ZoneLoad struct {
+	Zone string
+	Load float64
 }

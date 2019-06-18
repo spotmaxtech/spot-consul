@@ -1,14 +1,17 @@
 package spot_consul
 
 type CrossZone struct {
-	CrossRate    float32
-	Enabled      bool
-	LearningRate float32
+	Enabled           bool
+	CrossRate         float64
+	AlarmThreshold    float64
+	LearningThreshold float64
+	LearningRate      float64
 }
 
 type BalanceZone struct {
-	Enabled      bool
-	LearningRate float32
+	Enabled           bool
+	LearningThreshold float64
+	LearningRate      float64
 }
 
 type Lab struct {
@@ -17,23 +20,23 @@ type Lab struct {
 }
 
 type OnlineLab struct {
-	labUrl string
+	KeyUrl string
 	Lab    *Lab
 }
 
 func NewOnlineLab(url string) *OnlineLab {
-	return &OnlineLab{labUrl: url}
+	return &OnlineLab{KeyUrl: url}
 }
 
 func (ol *OnlineLab) Update() error {
 	lab := &Lab{
-		CrossZone:CrossZone{
-			CrossRate: 0.05,
-			Enabled:true,
+		CrossZone: CrossZone{
+			CrossRate:    0.05,
+			Enabled:      true,
 			LearningRate: 0.05,
 		},
-		BalanceZone:BalanceZone{
-			Enabled:true,
+		BalanceZone: BalanceZone{
+			Enabled:      true,
 			LearningRate: 0.05,
 		},
 	}

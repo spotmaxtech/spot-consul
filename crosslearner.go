@@ -1,1 +1,0 @@
-package spot_consul
