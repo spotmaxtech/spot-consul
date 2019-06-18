@@ -17,8 +17,15 @@
 * 实现服务端权重控制
 * 重写consul客户端，c++/golang版本
 
-# 开放性目标
-* 客户端能否替代consul agent，这样对于用户角度只需要面向一个DNS，用户获得哪个IP是均衡算法透明的，最大限度减少了用户侧的集成。
+# 开放性目标-客户端透明
+## 客户SDK方式
+如当前线上以及上述设计即为客户端sdk方式，提供给客户一份含有随机算法的sdk，客户通过api选择一个ip做请求。
+
+## 服务端方式
+客户不需要引入任何的sdk，只需要connect("service-name.consul.com")，即可获取到dns解析ip进行直连
+* 客户端能否替代consul agent，这样对于用户角度只需要面向一个DNS，用户获得哪个IP是均衡算法透明的，最大限度减少了用户侧的集成
+* 如果不能替代consul agent那要提供额外的dns server，这个server同agent并存，可能给用户感觉部署监控复杂的印象
+
 
 # 设计草图
 ![spot-consul-design](assets/spot-consul-design-v1.JPG)
