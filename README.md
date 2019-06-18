@@ -17,6 +17,9 @@
 * 实现服务端权重控制
 * 重写consul客户端，c++/golang版本
 
+# 开放性目标
+* 客户端能否替代consul agent，这样对于用户角度只需要面向一个DNS，用户获得哪个IP是均衡算法透明的，最大限度减少了用户侧的集成。
+
 # 设计草图
 ![spot-consul-design](assets/spot-consul-design-v1.JPG)
 
