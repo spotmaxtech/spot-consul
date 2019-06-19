@@ -3,13 +3,16 @@ package internal
 import (
 	"fmt"
 	"github.com/hashicorp/consul/api"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
+
+const TestAddress  = "13.251.183.9:8500"
 
 func TestConsul_KV(t *testing.T) {
 	// Get a new client
 	config := api.DefaultConfig()
-	config.Address = "13.251.183.9:8500"
+	config.Address = TestAddress
 	client, err := api.NewClient(config)
 	if err != nil {
 		panic(err)
@@ -36,7 +39,7 @@ func TestConsul_KV(t *testing.T) {
 func TestConsul_Health(t *testing.T) {
 	// Get a new client
 	config := api.DefaultConfig()
-	config.Address = "13.251.183.9:8500"
+	config.Address = TestAddress
 	client, err := api.NewClient(config)
 	if err != nil {
 		panic(err)
@@ -44,10 +47,37 @@ func TestConsul_Health(t *testing.T) {
 
 	health := client.Health()
 	entry, meta, err := health.Service("rs", "", true, nil)
-	t.Log(entry, meta)
+	t.Log(Prettify(entry), Prettify(meta))
 }
 
 func TestString(t *testing.T) {
 	s := String("a")
 	t.Log(s)
+}
+
+func TestConsul_GetKey(t *testing.T) {
+	Convey("test get key", t, func() {
+		consul := NewConsul(TestAddress)
+		key := "spotmax-test/foo"
+		err := consul.PutKey(key, "bar")
+		So(err, ShouldBeNil)
+		value, err := consul.GetKey(key)
+		So(err, ShouldBeNil)
+		So(string(value), ShouldEqual, "bar")
+		_, err = consul.kv.Delete(key, nil)
+		So(err, ShouldBeNil)
+	})
+}
+
+func TestConsul_GetService(t *testing.T) {
+	Convey("test get service", t, func() {
+		consul := NewConsul(TestAddress)
+		entry, err := consul.GetService("rs")
+		So(err, ShouldBeNil)
+		So(len(entry), ShouldBeGreaterThan, 0)
+		entry, err = consul.GetService("as")
+		So(err, ShouldBeNil)
+		So(len(entry), ShouldBeGreaterThan, 0)
+		t.Log(Prettify(entry))
+	})
 }
