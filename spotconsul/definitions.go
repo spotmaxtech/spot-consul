@@ -5,11 +5,6 @@ type GlobalService struct {
 	Services []*Service
 }
 
-type InstanceLoad struct {
-	Load       float64
-	InstanceId string
-	Ip         string
-}
 
 // Manage a service, every service manage many zones
 type Service struct {
@@ -40,7 +35,3 @@ type WeightFactors struct {
 	CrossRate       map[string]float64
 }
 
-type ZoneLoad struct {
-	Zone string
-	Load float64
-}

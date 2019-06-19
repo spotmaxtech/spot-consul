@@ -7,8 +7,10 @@ import (
 	"testing"
 )
 
-const TestConsulAddress  = "13.251.183.9:8500"
+const TestConsulAddress = "13.251.183.9:8500"
+const TestInstanceFactorKey = "spotmax-test/instance_factor.json"
 const TestOnlineLabKey = "spotmax-test/onlinelab.json"
+const TestZoneCPUKey = "spotmax-test/zone_cpu.json"
 
 func TestConsul_KV(t *testing.T) {
 	// Get a new client

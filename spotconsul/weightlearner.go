@@ -22,13 +22,13 @@ func (wl *WeightLearner) LearningCrossRate(workload Workload, ol *OnlineLab) err
 	zoneLoad := workload.GetZoneLoad()
 	var minLoad, maxLoad float64
 	var minZone, maxZone string
-	for zone, l := range zoneLoad {
-		if minLoad > l.Load || minLoad == 0 {
-			minLoad = l.Load
+	for zone, load := range zoneLoad {
+		if minLoad > load || minLoad == 0 {
+			minLoad = load
 			minZone = zone
 		}
-		if maxLoad < l.Load || maxLoad == 0 {
-			maxLoad = l.Load
+		if maxLoad < load || maxLoad == 0 {
+			maxLoad = load
 			maxZone = zone
 		}
 	}
@@ -51,9 +51,9 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 	for _, l := range instanceLoad {
 		node := service.Nodes[l.InstanceId]
 		zone := node.Zone
-		if l.Load > zoneLoad[zone].Load*(1+ol.lab.BalanceZone.LearningThreshold) {
+		if l.Load > zoneLoad[zone]*(1+ol.lab.BalanceZone.LearningThreshold) {
 			wl.InstanceFactors[l.InstanceId] -= wl.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
-		} else if l.Load < zoneLoad[zone].Load*(1-ol.lab.BalanceZone.LearningThreshold) {
+		} else if l.Load < zoneLoad[zone]*(1-ol.lab.BalanceZone.LearningThreshold) {
 			wl.InstanceFactors[l.InstanceId] += wl.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
 		}
 	}
