@@ -1,4 +1,4 @@
-package internal
+package spotconsul
 
 // Note: from the aws golang sdk
 import (

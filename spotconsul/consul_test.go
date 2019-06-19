@@ -1,4 +1,4 @@
-package internal
+package spotconsul
 
 import (
 	"fmt"
@@ -7,12 +7,13 @@ import (
 	"testing"
 )
 
-const TestAddress  = "13.251.183.9:8500"
+const TestConsulAddress  = "13.251.183.9:8500"
+const TestOnlineLabKey = "spotmax-test/onlinelab.json"
 
 func TestConsul_KV(t *testing.T) {
 	// Get a new client
 	config := api.DefaultConfig()
-	config.Address = TestAddress
+	config.Address = TestConsulAddress
 	client, err := api.NewClient(config)
 	if err != nil {
 		panic(err)
@@ -22,14 +23,14 @@ func TestConsul_KV(t *testing.T) {
 	kv := client.KV()
 
 	// PUT a new KV pair
-	p := &api.KVPair{Key: "spotmax/test", Value: []byte("1000")}
+	p := &api.KVPair{Key: "spotmax-test/test", Value: []byte("1000")}
 	_, err = kv.Put(p, nil)
 	if err != nil {
 		panic(err)
 	}
 
 	// Lookup the pair
-	pair, _, err := kv.Get("spotmax/test", nil)
+	pair, _, err := kv.Get("spotmax-test/test", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -39,7 +40,7 @@ func TestConsul_KV(t *testing.T) {
 func TestConsul_Health(t *testing.T) {
 	// Get a new client
 	config := api.DefaultConfig()
-	config.Address = TestAddress
+	config.Address = TestConsulAddress
 	client, err := api.NewClient(config)
 	if err != nil {
 		panic(err)
@@ -57,9 +58,9 @@ func TestString(t *testing.T) {
 
 func TestConsul_GetKey(t *testing.T) {
 	Convey("test get key", t, func() {
-		consul := NewConsul(TestAddress)
+		consul := NewConsul(TestConsulAddress)
 		key := "spotmax-test/foo"
-		err := consul.PutKey(key, "bar")
+		err := consul.PutKey(key, []byte("bar"))
 		So(err, ShouldBeNil)
 		value, err := consul.GetKey(key)
 		So(err, ShouldBeNil)
@@ -71,7 +72,7 @@ func TestConsul_GetKey(t *testing.T) {
 
 func TestConsul_GetService(t *testing.T) {
 	Convey("test get service", t, func() {
-		consul := NewConsul(TestAddress)
+		consul := NewConsul(TestConsulAddress)
 		entry, err := consul.GetService("rs")
 		So(err, ShouldBeNil)
 		So(len(entry), ShouldBeGreaterThan, 0)

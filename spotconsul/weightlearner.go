@@ -1,4 +1,4 @@
-package internal
+package spotconsul
 
 // Weight factor should learn from workload
 // 用一个模型来管理权重与学习方法便于升级维护
@@ -18,7 +18,7 @@ func (wl *WeightLearner) GetWeightFactors() *WeightFactors {
 	return factors
 }
 
-func (wl *WeightLearner) LearningCrossRate(workload Workload, lab *OnlineLab) error {
+func (wl *WeightLearner) LearningCrossRate(workload Workload, ol *OnlineLab) error {
 	zoneLoad := workload.GetZoneLoad()
 	var minLoad, maxLoad float64
 	var minZone, maxZone string
@@ -33,28 +33,28 @@ func (wl *WeightLearner) LearningCrossRate(workload Workload, lab *OnlineLab) er
 		}
 	}
 
-	if minZone != maxZone && maxLoad-minLoad > lab.Lab.CrossZone.LearningThreshold {
-		wl.CrossRate[maxZone] -= wl.CrossRate[maxZone] * lab.Lab.CrossZone.LearningRate
-		wl.CrossRate[minZone] += wl.CrossRate[minZone] * lab.Lab.CrossZone.LearningRate
+	if minZone != maxZone && maxLoad-minLoad > ol.lab.CrossZone.LearningThreshold {
+		wl.CrossRate[maxZone] -= wl.CrossRate[maxZone] * ol.lab.CrossZone.LearningRate
+		wl.CrossRate[minZone] += wl.CrossRate[minZone] * ol.lab.CrossZone.LearningRate
 	} else {
 		for zone := range zoneLoad {
-			wl.CrossRate[zone] -= wl.CrossRate[zone] * lab.Lab.CrossZone.LearningRate
+			wl.CrossRate[zone] -= wl.CrossRate[zone] * ol.lab.CrossZone.LearningRate
 		}
 	}
 	return nil
 }
 
-func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, lab *OnlineLab) error {
+func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol *OnlineLab) error {
 	zoneLoad := workload.GetZoneLoad()
 	instanceLoad := workload.GetInstanceLoad()
 
 	for _, l := range instanceLoad {
 		node := service.Nodes[l.InstanceId]
 		zone := node.Zone
-		if l.Load > zoneLoad[zone].Load*(1+lab.Lab.BalanceZone.LearningThreshold) {
-			wl.InstanceFactors[l.InstanceId] -= wl.InstanceFactors[l.InstanceId] * lab.Lab.BalanceZone.LearningRate
-		} else if l.Load < zoneLoad[zone].Load*(1-lab.Lab.BalanceZone.LearningThreshold) {
-			wl.InstanceFactors[l.InstanceId] += wl.InstanceFactors[l.InstanceId] * lab.Lab.BalanceZone.LearningRate
+		if l.Load > zoneLoad[zone].Load*(1+ol.lab.BalanceZone.LearningThreshold) {
+			wl.InstanceFactors[l.InstanceId] -= wl.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
+		} else if l.Load < zoneLoad[zone].Load*(1-ol.lab.BalanceZone.LearningThreshold) {
+			wl.InstanceFactors[l.InstanceId] += wl.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
 		}
 	}
 	return nil

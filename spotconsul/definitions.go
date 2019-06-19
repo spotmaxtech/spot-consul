@@ -1,4 +1,4 @@
-package internal
+package spotconsul
 
 // Manage global wide service
 type GlobalService struct {

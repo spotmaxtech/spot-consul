@@ -1,4 +1,4 @@
-package internal
+package spotconsul
 
 import "github.com/hashicorp/consul/api"
 
@@ -39,8 +39,8 @@ func (c *Consul) GetService(service string) ([]*api.ServiceEntry, error) {
 	return entry, err
 }
 
-func (c *Consul) PutKey(key string, value string) error {
-	pair := &api.KVPair{Key: key, Value: []byte(value)}
+func (c *Consul) PutKey(key string, value []byte) error {
+	pair := &api.KVPair{Key: key, Value: value}
 	_, err := c.kv.Put(pair, nil)
 	return err
 }

@@ -1,4 +1,4 @@
-package internal
+package spotconsul
 
 type Workload interface {
 	Update() error

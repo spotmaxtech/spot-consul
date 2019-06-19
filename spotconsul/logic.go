@@ -1,6 +1,6 @@
-package internal
+package spotconsul
 
-type SpotConsul struct {
+type Logic struct {
 	Service       *Service
 	OnlineLab     *OnlineLab
 	Workload      *Workload
@@ -8,7 +8,7 @@ type SpotConsul struct {
 	WeightLearner *WeightLearner
 }
 
-func (sc *SpotConsul) FetchAll() error {
+func (sc *Logic) FetchAll() error {
 	// 获取当前的全局服务节点
 	// 读取consul中的cpu数据，数据是来自cloud watch的
 	// 读取online lab中的学习指标数据
@@ -18,7 +18,7 @@ func (sc *SpotConsul) FetchAll() error {
 	return nil
 }
 
-func (sc *SpotConsul) Learning() error {
+func (sc *Logic) Learning() error {
 	if err := sc.WeightLearner.LearningFactors(sc.Service, *sc.Workload, sc.OnlineLab); err != nil {
 		return err
 	}
@@ -30,14 +30,14 @@ func (sc *SpotConsul) Learning() error {
 	return nil
 }
 
-func (sc *SpotConsul) UpdateAll() error {
+func (sc *Logic) UpdateAll() error {
 	if err := sc.WeightLearner.Update(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (sc *SpotConsul) Logic() error {
+func (sc *Logic) Logic() error {
 	if err := sc.FetchAll(); err != nil {
 		return err
 	}
