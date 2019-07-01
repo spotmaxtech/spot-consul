@@ -1,6 +1,7 @@
 package spotconsul
 
 type Logic struct {
+	Consul *Consul
 	Service       *Service
 	OnlineLab     *OnlineLab
 	Workload      *Workload
@@ -31,7 +32,7 @@ func (sc *Logic) Learning() error {
 }
 
 func (sc *Logic) UpdateAll() error {
-	if err := sc.WeightLearner.Update(); err != nil {
+	if err := sc.WeightLearner.Update(sc.Consul); err != nil {
 		return err
 	}
 	return nil

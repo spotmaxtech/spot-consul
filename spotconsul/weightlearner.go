@@ -1,21 +1,53 @@
 package spotconsul
 
+import (
+	"encoding/json"
+	"github.com/pkg/errors"
+)
+
+type LearningFactors struct {
+	InstanceFactors map[string]float64	`json:"instanceFactors"`
+	CrossRate       map[string]float64	`json:"crossRate"`
+}
+
 // Weight factor should learn from workload
 // 用一个模型来管理权重与学习方法便于升级维护
 // 初始化的权重用于控制实时学习权重的偏离风险，明显偏离太多是有可能发生了bug，需要控制一下
 type WeightLearner struct {
-	KeyUrl          string
-	InstanceFactors map[string]float64
-	CrossRate       map[string]float64
-	InitialWeight   *InitialWeight
+	Key           string
+	Factors       *LearningFactors
+	InitialWeight *InitialWeight
 }
 
-func (wl *WeightLearner) GetWeightFactors() *WeightFactors {
-	factors := &WeightFactors{
-		InstanceFactors: wl.InstanceFactors,
-		CrossRate:       wl.CrossRate,
+func NewWeightLearner(key string) *WeightLearner {
+	learner := &WeightLearner{
+		Key: key,
 	}
-	return factors
+
+	return learner
+}
+
+// 方便做前期测试使用，设置默认的学习数据
+func MockWeightLearner(key string) *WeightLearner {
+	learner := &WeightLearner{
+		Key: key,
+	}
+
+	factors := &LearningFactors{}
+	factors.InstanceFactors = make(map[string]float64)
+	factors.InstanceFactors["i-1"] = 1500
+	factors.InstanceFactors["i-2"] = 1200
+
+	factors.CrossRate = make(map[string]float64)
+	factors.CrossRate["us-west-2a"] = 0.1
+	factors.CrossRate["us-west-2b"] = 0.2
+
+	learner.Factors = factors
+	return learner
+}
+
+func (wl *WeightLearner) GetLearningFactors() *LearningFactors {
+	return wl.Factors
 }
 
 func (wl *WeightLearner) LearningCrossRate(workload Workload, ol *OnlineLab) error {
@@ -34,11 +66,11 @@ func (wl *WeightLearner) LearningCrossRate(workload Workload, ol *OnlineLab) err
 	}
 
 	if minZone != maxZone && maxLoad-minLoad > ol.lab.CrossZone.LearningThreshold {
-		wl.CrossRate[maxZone] -= wl.CrossRate[maxZone] * ol.lab.CrossZone.LearningRate
-		wl.CrossRate[minZone] += wl.CrossRate[minZone] * ol.lab.CrossZone.LearningRate
+		wl.Factors.CrossRate[maxZone] -= wl.Factors.CrossRate[maxZone] * ol.lab.CrossZone.LearningRate
+		wl.Factors.CrossRate[minZone] += wl.Factors.CrossRate[minZone] * ol.lab.CrossZone.LearningRate
 	} else {
 		for zone := range zoneLoad {
-			wl.CrossRate[zone] -= wl.CrossRate[zone] * ol.lab.CrossZone.LearningRate
+			wl.Factors.CrossRate[zone] -= wl.Factors.CrossRate[zone] * ol.lab.CrossZone.LearningRate
 		}
 	}
 	return nil
@@ -52,21 +84,39 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 		node := service.Nodes[l.InstanceId]
 		zone := node.Zone
 		if l.Load > zoneLoad[zone]*(1+ol.lab.BalanceZone.LearningThreshold) {
-			wl.InstanceFactors[l.InstanceId] -= wl.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
+			wl.Factors.InstanceFactors[l.InstanceId] -= wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
 		} else if l.Load < zoneLoad[zone]*(1-ol.lab.BalanceZone.LearningThreshold) {
-			wl.InstanceFactors[l.InstanceId] += wl.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
+			wl.Factors.InstanceFactors[l.InstanceId] += wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
 		}
 	}
 	return nil
 }
 
-func (wl *WeightLearner) Fetch() error {
-	// TODO: fetch consul data
+func (wl *WeightLearner) Fetch(consul *Consul) error {
+	factorsValue, err := consul.GetKey(wl.Key)
+	if err != nil {
+		return errors.Errorf("learning factors get failed, %s", err.Error())
+	}
+
+	var factors LearningFactors
+
+	if err := json.Unmarshal(factorsValue, &factors); err != nil {
+		return errors.Errorf("unmarshal failed for learning factors, %s", err.Error())
+	}
+
+	wl.Factors = &factors
 	return nil
 }
 
-func (wl *WeightLearner) Update() error {
-	// TODO: update back to consul
-	return nil
+func (wl *WeightLearner) Update(consul *Consul) error {
+	factorsValue, err := json.MarshalIndent(wl.Factors, "", "    ")
+	if err != nil {
+		return errors.Errorf("marshal failed for instance factors %s", err.Error())
+	}
 
+	if err := consul.PutKey(wl.Key, factorsValue); err != nil {
+		return err
+	}
+
+	return nil
 }
