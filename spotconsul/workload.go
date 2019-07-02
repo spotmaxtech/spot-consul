@@ -106,8 +106,8 @@ type MockWorkload struct {
 
 func (wl *MockWorkload) GetInstanceLoad() []*InstanceLoad {
 	var loads []*InstanceLoad
-	loads = append(loads, &InstanceLoad{Load: 5, InstanceId: "1", PublicIp: "1.1.1.1"})
-	loads = append(loads, &InstanceLoad{Load: 5, InstanceId: "2", PublicIp: "1.1.1.2"})
+	loads = append(loads, &InstanceLoad{Load: 5, InstanceId: "i-1", PublicIp: "1.1.1.1"})
+	loads = append(loads, &InstanceLoad{Load: 5, InstanceId: "i-2", PublicIp: "1.1.1.2"})
 	return loads
 }
 
