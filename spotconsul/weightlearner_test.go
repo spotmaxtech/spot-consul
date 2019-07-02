@@ -36,12 +36,34 @@ func TestWeightLearner_LearningFactors(t *testing.T) {
 		So(ol.key, ShouldEqual, TestOnlineLabKey)
 		t.Log(ol.lab)
 
-		wl := MockWorkload{}
+		wl := &MockWorkload{}
 		instLoad := wl.GetInstanceLoad()
 		t.Log(instLoad)
 		zoneLoad := wl.GetZoneLoad()
 		t.Log(zoneLoad)
 
-		// learner.LearningFactors()
+		service := &Service{
+			Name: "rs",
+		}
+		nodes := make(map[string]*ServiceNode)
+		nodes["i-1"] = &ServiceNode{
+			InstanceId:"i-1",
+			Host:"1.1.1.1",
+			Zone:"us-west-2a",
+		}
+		nodes["i-2"] = &ServiceNode{
+			InstanceId:"i-2",
+			Host:"2.2.2.2",
+			Zone:"us-west-2b",
+		}
+		service.Nodes = nodes
+
+		err = learner.LearningFactors(service, wl, ol)
+		So(err, ShouldBeNil)
+		t.Log(Prettify(learner.Factors))
+
+		err = learner.LearningCrossRate(wl, ol)
+		So(err, ShouldBeNil)
+		t.Log(Prettify(learner.Factors))
 	})
 }

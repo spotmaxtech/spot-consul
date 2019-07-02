@@ -11,5 +11,9 @@ func TestGetService(t *testing.T) {
 		rsService, err := GetService(consul, "rs")
 		So(err, ShouldBeNil)
 		t.Log(Prettify(rsService))
+
+		asService, err := GetService(consul, "as")
+		So(err, ShouldBeNil)
+		t.Log(Prettify(asService))
 	})
 }

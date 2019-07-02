@@ -2,6 +2,7 @@ package spotconsul
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
 )
 
@@ -81,12 +82,17 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 	instanceLoad := workload.GetInstanceLoad()
 
 	for _, l := range instanceLoad {
-		node := service.Nodes[l.InstanceId]
+		node, OK := service.Nodes[l.InstanceId]
+		if !OK {
+			fmt.Println("can not find proper node", l.InstanceId)
+			continue
+		}
 		zone := node.Zone
 		if l.Load > zoneLoad[zone]*(1+ol.lab.BalanceZone.LearningThreshold) {
 			wl.Factors.InstanceFactors[l.InstanceId] -= wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
 		} else if l.Load < zoneLoad[zone]*(1-ol.lab.BalanceZone.LearningThreshold) {
 			wl.Factors.InstanceFactors[l.InstanceId] += wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
+			fmt.Printf("increase instance %s by %g \n", l.InstanceId, ol.lab.BalanceZone.LearningRate)
 		}
 	}
 	return nil
