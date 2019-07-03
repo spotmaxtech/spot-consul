@@ -1,7 +1,6 @@
 package spotconsul
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"strconv"
 )
@@ -52,19 +51,19 @@ func GetService(consul *Consul, serviceName string) (*Service, error) {
 		*/
 		instanceId, OK := meta["instanceID"]
 		if !OK {
-			log.Warnf("no instance id in meta", entry)
+			log.Warnf("no instance id in meta [%#v]", entry)
 			continue
 		}
 
 		zone, OK := meta["zone"]
 		if !OK {
-			fmt.Println("no zone meta", entry)
+			log.Warnf("no zone in meta [%#v]", entry)
 			continue
 		}
 
 		publicIp, OK := meta["publicIP"]
 		if !OK {
-			fmt.Println("not public ip", entry)
+			log.Warnf("no public ip in meta [%#v]", entry)
 			publicIp = "unknown"
 		}
 
@@ -72,7 +71,7 @@ func GetService(consul *Consul, serviceName string) (*Service, error) {
 		defaultFactor := 500.0 // TODO: set to constant?
 		balanceFactorStr, OK := meta["balanceFactor"]
 		if !OK {
-			log.Warnf("no balance factor in meta [%s], set default [%f]", entry, defaultFactor)
+			log.Warnf("no balance factor in meta [%#v], set default [%f]", entry, defaultFactor)
 			balanceFactor = defaultFactor
 		} else {
 			balanceFactor, err = strconv.ParseFloat(balanceFactorStr, 64)

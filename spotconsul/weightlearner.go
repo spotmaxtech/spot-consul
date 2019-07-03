@@ -71,7 +71,7 @@ func (wl *WeightLearner) LearningCrossRate(workload Workload, ol *OnlineLab) err
 		if _, OK := wl.Factors.CrossRate[zone]; !OK {
 			// TODO: change cross rate to initial rate
 			wl.Factors.CrossRate[zone] = ol.lab.CrossZone.CrossRate
-			log.Warnf("cross rate for zone [%s] not found, set default [%f]", zone, ol.lab.CrossZone.CrossRate)
+			log.Warnf("cross rate for zone [%s] not found, set default rate [%f]", zone, ol.lab.CrossZone.CrossRate)
 		}
 	}
 
@@ -90,14 +90,20 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 	zoneLoad := workload.GetZoneLoad()
 	instanceLoad := workload.GetInstanceLoad()
 
+	// load all the service node
+	for _, node := range service.Nodes {
+		if _, OK := wl.Factors.InstanceFactors[node.InstanceId]; !OK {
+			wl.Factors.InstanceFactors[node.InstanceId] = node.DefaultFactor
+			log.Infof("instance [%s] factors not found, set default factor [%f]", node.InstanceId, node.DefaultFactor)
+		}
+	}
+
+	// adjust the factor with the load
 	for _, l := range instanceLoad {
 		node, OK := service.Nodes[l.InstanceId]
 		if !OK {
-			log.Warnf("instance [%s] not in service", l.InstanceId)
+			log.Warnf("workload instance [%s] not in service, skip it", l.InstanceId)
 			continue
-		}
-		if _, OK := wl.Factors.InstanceFactors[l.InstanceId]; !OK {
-			log.Warnf("instance [%s] factors not found, set instance default [%f]", l.InstanceId, node.DefaultFactor)
 		}
 
 		zone := node.Zone
