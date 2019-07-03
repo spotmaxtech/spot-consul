@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type LearningFactors struct {
@@ -99,15 +100,22 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 }
 
 func (wl *WeightLearner) Fetch(consul *Consul) error {
-	factorsValue, err := consul.GetKey(wl.Key)
-	if err != nil {
-		return errors.Errorf("learning factors get failed, %s", err.Error())
-	}
-
 	var factors LearningFactors
 
-	if err := json.Unmarshal(factorsValue, &factors); err != nil {
-		return errors.Errorf("unmarshal failed for learning factors, %s", err.Error())
+	factorsValue, err := consul.GetKey(wl.Key)
+	if err != nil {
+		if _, OK := err.(*ErrorConsulKeyNotExist); OK {
+			log.Warn("no learning factors found, will fresh the factors")
+			factors.InstanceFactors = make(map[string]float64)
+			factors.CrossRate = make(map[string]float64)
+		} else {
+			log.Errorf("unexpected error, %s", err.Error())
+			return err
+		}
+	} else {
+		if err := json.Unmarshal(factorsValue, &factors); err != nil {
+			return errors.Errorf("unmarshal failed for learning factors, %s", err.Error())
+		}
 	}
 
 	wl.Factors = &factors

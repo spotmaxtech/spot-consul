@@ -1,6 +1,9 @@
 package spotconsul
 
-import "github.com/hashicorp/consul/api"
+import (
+	"fmt"
+	"github.com/hashicorp/consul/api"
+)
 
 type Consul struct {
 	address string
@@ -29,6 +32,9 @@ func (c *Consul) GetKey(key string) ([]byte, error) {
 	pair, _, err := c.kv.Get(key, nil)
 	if err != nil {
 		return nil, err
+	}
+	if pair == nil {
+		return nil, &ErrorConsulKeyNotExist{fmt.Sprintf("no such key [%s]", key)}
 	}
 	return pair.Value, nil
 }

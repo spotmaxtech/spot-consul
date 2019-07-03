@@ -71,6 +71,13 @@ func TestConsul_GetKey(t *testing.T) {
 		_, err = consul.kv.Delete(key, nil)
 		So(err, ShouldBeNil)
 	})
+
+	Convey("bad case", t, func() {
+		consul := NewConsul(TestConsulAddress)
+		key := "spotmax-test/non-exist"
+		_, err := consul.GetKey(key)
+		So(err, ShouldNotBeNil)
+	})
 }
 
 func TestConsul_GetService(t *testing.T) {
