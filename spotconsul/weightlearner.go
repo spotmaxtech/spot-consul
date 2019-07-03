@@ -8,8 +8,8 @@ import (
 )
 
 type LearningFactors struct {
-	InstanceFactors map[string]float64	`json:"instanceFactors"`
-	CrossRate       map[string]float64	`json:"crossRate"`
+	InstanceFactors map[string]float64 `json:"instanceFactors"`
+	CrossRate       map[string]float64 `json:"crossRate"`
 }
 
 // Weight factor should learn from workload
@@ -67,6 +67,14 @@ func (wl *WeightLearner) LearningCrossRate(workload Workload, ol *OnlineLab) err
 		}
 	}
 
+	for _, zone := range []string{maxZone, minZone} {
+		if _, OK := wl.Factors.CrossRate[zone]; !OK {
+			// TODO: change cross rate to initial rate
+			wl.Factors.CrossRate[zone] = ol.lab.CrossZone.CrossRate
+			log.Warnf("cross rate for zone [%s] not found, set default [%f]", zone, ol.lab.CrossZone.CrossRate)
+		}
+	}
+
 	if minZone != maxZone && maxLoad-minLoad > ol.lab.CrossZone.LearningThreshold {
 		wl.Factors.CrossRate[maxZone] -= wl.Factors.CrossRate[maxZone] * ol.lab.CrossZone.LearningRate
 		wl.Factors.CrossRate[minZone] += wl.Factors.CrossRate[minZone] * ol.lab.CrossZone.LearningRate
@@ -85,9 +93,13 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 	for _, l := range instanceLoad {
 		node, OK := service.Nodes[l.InstanceId]
 		if !OK {
-			fmt.Println("can not find proper node", l.InstanceId)
+			log.Warnf("instance [%s] not in service", l.InstanceId)
 			continue
 		}
+		if _, OK := wl.Factors.InstanceFactors[l.InstanceId]; !OK {
+			log.Warnf("instance [%s] factors not found, set instance default [%f]", l.InstanceId, node.DefaultFactor)
+		}
+
 		zone := node.Zone
 		if l.Load > zoneLoad[zone]*(1+ol.lab.BalanceZone.LearningThreshold) {
 			wl.Factors.InstanceFactors[l.InstanceId] -= wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate

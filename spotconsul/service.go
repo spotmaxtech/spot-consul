@@ -2,13 +2,14 @@ package spotconsul
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"strconv"
 )
 
 // Manage global wide service
 type GlobalService struct {
 	Services []*Service
 }
-
 
 // Manage a service, every service manage many zones
 type Service struct {
@@ -21,18 +22,19 @@ type Service struct {
 // Better to use a struct to manage node detail
 // Data filled when reading consul key
 type ServiceNode struct {
-	InstanceId string
-	Host       string
-	Zone       string
+	DefaultFactor float64
+	InstanceId    string
+	Host          string
+	Zone          string
 }
 
-func GetService(consul *Consul, serviceName string) (* Service, error) {
+func GetService(consul *Consul, serviceName string) (*Service, error) {
 	entries, err := consul.GetService(serviceName)
 	if err != nil {
 		return nil, err
 	}
 
-	service := &Service {
+	service := &Service{
 		Name: serviceName,
 	}
 	service.Nodes = make(map[string]*ServiceNode)
@@ -41,16 +43,16 @@ func GetService(consul *Consul, serviceName string) (* Service, error) {
 	for _, entry := range entries {
 		meta := entry.Service.Meta
 		/*
-		Meta: {
-			balanceFactor: "1900",
-			instanceID: "i-09b11dacc2d6e0f2d",
-			publicIP: "13.229.182.102",
-			zone: "ap-southeast-1b"
-		},
+			Meta: {
+				balanceFactor: "1900",
+				instanceID: "i-09b11dacc2d6e0f2d",
+				publicIP: "13.229.182.102",
+				zone: "ap-southeast-1b"
+			},
 		*/
 		instanceId, OK := meta["instanceID"]
 		if !OK {
-			fmt.Println("no instance id meta", entry)
+			log.Warnf("no instance id in meta", entry)
 			continue
 		}
 
@@ -66,10 +68,24 @@ func GetService(consul *Consul, serviceName string) (* Service, error) {
 			publicIp = "unknown"
 		}
 
+		var balanceFactor float64
+		defaultFactor := 500.0 // TODO: set to constant?
+		balanceFactorStr, OK := meta["balanceFactor"]
+		if !OK {
+			log.Warnf("no balance factor in meta [%s], set default [%f]", entry, defaultFactor)
+			balanceFactor = defaultFactor
+		} else {
+			balanceFactor, err = strconv.ParseFloat(balanceFactorStr, 64)
+			if err != nil {
+				balanceFactor = defaultFactor
+			}
+		}
+
 		node := &ServiceNode{
-			InstanceId: instanceId,
-			Host: publicIp,
-			Zone: zone,
+			DefaultFactor: balanceFactor,
+			InstanceId:    instanceId,
+			Host:          publicIp,
+			Zone:          zone,
 		}
 		service.Nodes[instanceId] = node
 		service.Zones[zone] = append(service.Zones[zone], node)
