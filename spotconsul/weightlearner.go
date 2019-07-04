@@ -122,7 +122,7 @@ func (wl *WeightLearner) Fetch(consul *Consul) error {
 
 	factorsValue, err := consul.GetKey(wl.Key)
 	if err != nil {
-		if _, OK := err.(*ErrorConsulKeyNotExist); OK {
+		if err == ErrorConsulKeyNotExist {
 			log.Warn("no learning factors found, will fresh the factors")
 			factors.InstanceFactors = make(map[string]float64)
 			factors.CrossRate = make(map[string]float64)

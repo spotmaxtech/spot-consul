@@ -1,7 +1,6 @@
 package spotconsul
 
 import (
-	"fmt"
 	"github.com/hashicorp/consul/api"
 )
 
@@ -34,7 +33,7 @@ func (c *Consul) GetKey(key string) ([]byte, error) {
 		return nil, err
 	}
 	if pair == nil {
-		return nil, &ErrorConsulKeyNotExist{fmt.Sprintf("no such key [%s]", key)}
+		return nil, ErrorConsulKeyNotExist
 	}
 	return pair.Value, nil
 }
