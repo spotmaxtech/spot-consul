@@ -29,6 +29,7 @@ type DataInstanceFactor struct {
 }
 
 type Workload interface {
+	Fetch(consul *Consul) error
 	GetInstanceLoad() []*InstanceLoad
 	GetZoneLoad() map[string]float64
 }
@@ -102,6 +103,10 @@ func (wl *WorkloadCPU) GetZoneLoad() map[string]float64 {
 
 // Mock一个负载对象用于快速开发测试
 type MockWorkload struct {
+}
+
+func (wl *MockWorkload) Fetch(consul *Consul) error {
+	return nil
 }
 
 func (wl *MockWorkload) GetInstanceLoad() []*InstanceLoad {

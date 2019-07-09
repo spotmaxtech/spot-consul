@@ -149,6 +149,7 @@ func (wl *WeightLearner) Update(consul *Consul) error {
 	if err := consul.PutKey(wl.Key, factorsValue); err != nil {
 		return err
 	}
+	log.Infof("update learning factor [%s] , %s", wl.Key, factorsValue)
 
 	return nil
 }
