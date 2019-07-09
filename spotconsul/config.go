@@ -13,6 +13,7 @@ type Config struct {
 
 type GlobalConfig struct {
 	LoopingTimeS int64 `json:"loopingTimeS"`
+	LingerTimeS  int64 `json:"lingerTimeS"`
 }
 
 type LogicConfig struct {

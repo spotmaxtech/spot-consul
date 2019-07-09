@@ -1,6 +1,7 @@
 {
   "global": {
-    "loopingTimeS": 5
+    "loopingTimeS": 3,
+    "lingerTimeS": 3
   },
   "logic": [
     {

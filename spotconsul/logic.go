@@ -107,8 +107,11 @@ func (l *Logic) RunningLoop(ctx context.Context) {
 			select {
 			case <-ticker.C:
 				log.Infof("service %s logic run once", l.ServiceName)
+				if err := l.RunOnce(); err != nil {
+					log.Errorf("service %s logic error, %s", l.ServiceName, err.Error())
+				}
 			case <-ctx.Done():
-				log.Infof("service %s logic running loop is done", l.ServiceName)
+				log.Infof("service %s logic running loop is canceled", l.ServiceName)
 				return
 			default:
 				log.Debugf("service %s logic running loop sleep", l.ServiceName)

@@ -2,7 +2,6 @@ package spotconsul
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -107,11 +106,14 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 		}
 
 		zone := node.Zone
-		if l.Load > zoneLoad[zone]*(1+ol.lab.BalanceZone.LearningThreshold) {
+		upperZoneThr := zoneLoad[zone]*(1+ol.lab.BalanceZone.LearningThreshold)
+		lowerZoneThr := zoneLoad[zone]*(1-ol.lab.BalanceZone.LearningThreshold)
+		if l.Load > upperZoneThr {
 			wl.Factors.InstanceFactors[l.InstanceId] -= wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
-		} else if l.Load < zoneLoad[zone]*(1-ol.lab.BalanceZone.LearningThreshold) {
+		} else if l.Load < lowerZoneThr {
 			wl.Factors.InstanceFactors[l.InstanceId] += wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
-			fmt.Printf("increase instance %s by %g \n", l.InstanceId, ol.lab.BalanceZone.LearningRate)
+			log.Debugf("increase instance %s by %g, load [%g] zoneLoad [%g]", l.InstanceId,
+				ol.lab.BalanceZone.LearningRate, l.Load, zoneLoad[zone])
 		}
 	}
 	return nil
