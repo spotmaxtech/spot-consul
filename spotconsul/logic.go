@@ -104,9 +104,6 @@ func (l *Logic) RunOnce() error {
 }
 
 func (l *Logic) RunningLoop(ctx context.Context) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-
 	// run once at beginning
 	log.Infof("service %s logic run once", l.ServiceName)
 	if l.globalCfg.FreshLearningStart {
@@ -122,6 +119,8 @@ func (l *Logic) RunningLoop(ctx context.Context) {
 	}
 
 	// repeated loop
+	var wg sync.WaitGroup
+	wg.Add(1)
 	ticker := time.NewTicker(time.Second * time.Duration(l.globalCfg.LoopingTimeS))
 	go func(ctx context.Context) {
 		for {
@@ -133,6 +132,7 @@ func (l *Logic) RunningLoop(ctx context.Context) {
 				}
 			case <-ctx.Done():
 				log.Infof("service %s logic running loop is canceled", l.ServiceName)
+				wg.Done()
 				return
 			default:
 				log.Debugf("service %s logic running loop sleep", l.ServiceName)

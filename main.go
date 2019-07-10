@@ -30,20 +30,22 @@ func Process(ctx context.Context) {
 }
 
 func main() {
-	config := NewConfig("./configs/regions.json")
 	log.SetLevel(log.DebugLevel)
+	config := NewConfig("./configs/regions.json")
 	fmt.Println(Prettify(config))
 
-	logic := NewLearningLogic(config.Logic[0], config.Global)
-
-	// run the logic
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func(ctx context.Context) {
-		logic.RunningLoop(ctx)
-		wg.Done()
-	}(ctx)
+
+	for _, logicCfg := range config.Logic {
+		logic := NewLearningLogic(logicCfg, config.Global)
+		log.Infof("ready to run service %#v", logicCfg)
+		wg.Add(1)
+		go func(ctx context.Context) {
+			logic.RunningLoop(ctx) // here logic will use ctx too
+			wg.Done()
+		}(ctx)
+	}
 
 	// cancel context controlling
 	signalChan := make(chan os.Signal, 1)
@@ -53,7 +55,6 @@ func main() {
 		log.Warnf("received an interrupt, stopping service (%d sec) ...", config.Global.LingerTimeS)
 		cancel()
 		time.Sleep(time.Second * time.Duration(config.Global.LingerTimeS))
-		wg.Done()
 	}()
 	wg.Wait()
 	log.Infof("service stopped")

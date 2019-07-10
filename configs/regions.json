@@ -8,10 +8,18 @@
     {
       "consulAddr": "13.251.183.9:8500",
       "instanceLoadKey": "clb/rs/instance_factor.json",
-      "learningFactorKey": "spotmax-intg/learning_factor.json",
+      "learningFactorKey": "spotmax-intg/rs.service.com/learning_factor.json",
       "onlineLabKey": "spotmax-intg/onlinelab.json",
       "serviceName": "rs",
       "zoneCPUKey": "clb/rs/zone_cpu.json"
+    },
+    {
+      "consulAddr": "13.251.183.9:8500",
+      "instanceLoadKey": "clb/as/instance_factor.json",
+      "learningFactorKey": "spotmax-intg/as.service.com/learning_factor.json",
+      "onlineLabKey": "spotmax-intg/onlinelab.json",
+      "serviceName": "as",
+      "zoneCPUKey": "clb/as/zone_cpu.json"
     }
   ]
 }
