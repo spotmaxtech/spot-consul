@@ -106,8 +106,8 @@ func (wl *WeightLearner) LearningFactors(service *Service, workload Workload, ol
 		}
 
 		zone := node.Zone
-		upperZoneThr := zoneLoad[zone]*(1+ol.lab.BalanceZone.LearningThreshold)
-		lowerZoneThr := zoneLoad[zone]*(1-ol.lab.BalanceZone.LearningThreshold)
+		upperZoneThr := zoneLoad[zone] * (1 + ol.lab.BalanceZone.LearningThreshold)
+		lowerZoneThr := zoneLoad[zone] * (1 - ol.lab.BalanceZone.LearningThreshold)
 		if l.Load > upperZoneThr {
 			wl.Factors.InstanceFactors[l.InstanceId] -= wl.Factors.InstanceFactors[l.InstanceId] * ol.lab.BalanceZone.LearningRate
 		} else if l.Load < lowerZoneThr {
@@ -140,6 +140,10 @@ func (wl *WeightLearner) Fetch(consul *Consul) error {
 
 	wl.Factors = &factors
 	return nil
+}
+
+func (wl *WeightLearner) RiskControl(initWeight *InitialWeight) {
+	// TODO: do the risk control
 }
 
 func (wl *WeightLearner) Update(consul *Consul) error {

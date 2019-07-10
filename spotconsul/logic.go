@@ -23,6 +23,7 @@ type Logic struct {
 func NewLearningLogic(logicCfg *LogicConfig, globalCfg *GlobalConfig) *Logic {
 	logic := &Logic{
 		Consul:        NewConsul(logicCfg.ConsulAddr),
+		InitialWeight: NewInitialWeight(),
 		OnlineLab:     NewOnlineLab(logicCfg.OnlineLabKey),
 		ServiceName:   logicCfg.ServiceName,
 		WeightLearner: NewWeightLearner(logicCfg.LearningFactorKey),
@@ -58,7 +59,8 @@ func (l *Logic) FetchAll() error {
 	}
 	log.Debug("logic weight learner fetched")
 
-	// * 读取默认的权重数据
+	l.InitialWeight.Fetch(service)
+	log.Debugf("logic initial weight fetched")
 
 	return nil
 }
@@ -71,6 +73,9 @@ func (l *Logic) Learning() error {
 	if err := l.WeightLearner.LearningCrossRate(l.Workload, l.OnlineLab); err != nil {
 		return err
 	}
+
+	// TODO: should we handle error?
+	l.WeightLearner.RiskControl(l.InitialWeight)
 
 	return nil
 }
