@@ -101,6 +101,22 @@ func (l *Logic) RunOnce() error {
 func (l *Logic) RunningLoop(ctx context.Context) {
 	var wg sync.WaitGroup
 	wg.Add(1)
+
+	// run once at beginning
+	log.Infof("service %s logic run once", l.ServiceName)
+	if l.globalCfg.FreshLearningStart {
+		if err := l.WeightLearner.Clear(l.Consul); err != nil {
+			log.Errorf("service %s clear learning cache error", l.ServiceName)
+		} else {
+			log.Infof("service %s learning cache cleared", l.ServiceName)
+		}
+	}
+
+	if err := l.RunOnce(); err != nil {
+		log.Errorf("service %s logic error, %s", l.ServiceName, err.Error())
+	}
+
+	// repeated loop
 	ticker := time.NewTicker(time.Second * time.Duration(l.globalCfg.LoopingTimeS))
 	go func(ctx context.Context) {
 		for {

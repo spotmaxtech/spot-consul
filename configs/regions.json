@@ -1,7 +1,8 @@
 {
   "global": {
-    "loopingTimeS": 3,
-    "lingerTimeS": 3
+    "loopingTimeS": 60,
+    "lingerTimeS": 3,
+    "freshLearningStart": true
   },
   "logic": [
     {

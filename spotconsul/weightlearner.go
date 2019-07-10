@@ -155,3 +155,11 @@ func (wl *WeightLearner) Update(consul *Consul) error {
 
 	return nil
 }
+
+func (wl *WeightLearner) Clear(consul *Consul) error {
+	if _, err := consul.kv.Delete(wl.Key, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
