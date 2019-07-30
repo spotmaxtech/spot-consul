@@ -11,7 +11,7 @@ func TestNewWorkloadCPU(t *testing.T) {
 		workload := NewWorkloadCPU(TestInstanceFactorKey, TestZoneCPUKey)
 		err := workload.Fetch(consul)
 		So(err, ShouldBeNil)
-		So(workload.zoneLoadKey, ShouldEqual,TestZoneCPUKey)
+		So(workload.zoneLoadKey, ShouldEqual, TestZoneCPUKey)
 		t.Log(Prettify(workload.zoneLoads))
 		t.Log(Prettify(workload.instanceLoads))
 	})
