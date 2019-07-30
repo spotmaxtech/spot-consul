@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
-	"github.com/spotmaxtech/gokit"
 	. "github.com/spotmaxtech/spot-consul/spotconsul"
 	"os"
 	"os/signal"
@@ -32,22 +30,8 @@ func Process(ctx context.Context) {
 }
 
 func main() {
-	// log init with hook
-	host, err := os.Hostname()
-	if err != nil {
-		panic(err)
-	}
-	client, err := elastic.NewClient(elastic.SetURL("http://es.spotmaxtech.com"),
-		elastic.SetBasicAuth("", ""),
-		elastic.SetSniff(false))
-	hook, err := gokit.NewElasticHook(client, host, log.DebugLevel, "spot-consul", gokit.RotateMonth)
-	if err != nil {
-		panic(err)
-	}
-	log.AddHook(hook)
 	log.SetLevel(log.DebugLevel)
 	config := NewConfig("./configs/regions.json")
-
 	fmt.Println(Prettify(config))
 
 	ctx, cancel := context.WithCancel(context.Background())
